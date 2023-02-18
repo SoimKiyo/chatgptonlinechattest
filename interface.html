@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Application de chat en direct</title>
+	<style>
+		/* Style pour la zone des messages */
+		#messages {
+			height: 200px;
+			overflow-y: scroll;
+			border: 1px solid black;
+			padding: 10px;
+		}
+
+		/* Style pour la zone d'entrée de message */
+		#messageBox {
+			width: 80%;
+			padding: 5px;
+			margin-right: 10px;
+			border: 1px solid black;
+			border-radius: 3px;
+			font-size: 16px;
+		}
+
+		/* Style pour le bouton d'envoi */
+		#sendButton {
+			background-color: #4CAF50;
+			color: white;
+			padding: 8px 16px;
+			border: none;
+			border-radius: 3px;
+			cursor: pointer;
+			font-size: 16px;
+		}
+	</style>
+</head>
+<body>
+	<div id="messages"></div>
+	<div>
+		<input type="text" id="pseudoBox" placeholder="Entrez votre pseudonyme...">
+		<input type="text" id="messageBox" placeholder="Entrez votre message...">
+		<button id="sendButton">Envoyer</button>
+	</div>
+
+	<script>
+		// Ouvre une connexion websocket vers le serveur
+		const socket = new WebSocket("ws://localhost:8766/");
+
+		// Quand la connexion est établie, configure la fonction de traitement des messages entrants
+		socket.onopen = function(event) {
+			// Demande à l'utilisateur de saisir un pseudonyme
+			const pseudoBox = document.getElementById("pseudoBox");
+			pseudoBox.addEventListener("keydown", function(event) {
+				if (event.key === "Enter") {
+					const pseudo = pseudoBox.value;
+					socket.send(pseudo);
+					pseudoBox.disabled = true;
+					pseudoBox.style.backgroundColor = "#eee";
+					pseudoBox.style.cursor = "not-allowed";
+					pseudoBox.style.border = "none";
+					messageBox.focus();
+				}
+			});
+
+			// Gère l'affichage des messages entrants
+			socket.onmessage = function(event) {
+				const messages = document.getElementById("messages");
+				messages.innerHTML += event.data + "<br>";
+				messages.scrollTop = messages.scrollHeight;
+			};
+		};
+
+		// Quand l'utilisateur appuie sur le bouton d'envoi, envoie le message au serveur
+		const sendButton = document.getElementById("sendButton");
+		sendButton.onclick = function(event) {
+			const messageBox = document.getElementById("messageBox");
+			const message = messageBox.value;
+			socket.send(message);
+			messageBox.value = "";
+		};
+
+		// Quand l'utilisateur appuie sur la touche "Entrée" dans la zone de saisie de message, envoie le message au serveur
+		const messageBox = document.getElementById("messageBox");
+		messageBox.addEventListener("keydown", function(event) {
+			if (event.key === "Enter") {
+				sendButton.click();
+			}
+		});
+	</script>
+</body>
+</html>
