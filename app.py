@@ -30,7 +30,7 @@ async def message_handler(websocket, path):
         print(f"{pseudonyme} s'est déconnecté")
 
 # Crée un serveur websockets
-start_server = websockets.serve(message_handler, 'https://chatgpttestcomm.onrender.com/', 8766)
+start_server = websockets.serve(message_handler, 'localhost', 8766)
 print("IP:",start_server)
 
 # Démarre le serveur
